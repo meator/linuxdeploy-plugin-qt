@@ -77,6 +77,31 @@ std::filesystem::path findQmake() {
     return qmakePath;
 }
 
+std::filesystem::path findQmlImportScanner() {
+    using linuxdeploy::util::which;
+
+    // Calling plain which("qmlimportscanner") is problematic, because it
+    // is symlinked to qtchooser on some distros. qtchooser's Qt6 support
+    // is less than ideal, qmlimportscanner used to be in
+    // /usr/lib/qt5/bin/qmlimportscanner, but it was moved to
+    // /usr/lib/qt6/libexec/qmlimportscanner in Qt6. qtchooser is capable
+    // of checking only a single directory for executables at a time,
+    // and it usually checks the bin/ one, so qmlimportscanner cannot
+    // be executed on Qt6 (if you are flabbergasted by this, remember that
+    // current latest release of qtchooser, 66_3, doesn't even include a
+    // qt6 config lookup file).
+    // Either way, QT_INSTALL_LIBEXECS/QT_INSTALL_BINS lookup is the more
+    // robust solution.
+    auto qmakeVars = queryQmake(findQmake());
+    auto path = which(qmakeVars["QT_INSTALL_LIBEXECS"] + "/qmlimportscanner");
+    if (path.empty())
+        path = which(qmakeVars["QT_INSTALL_BINS"] + "/qmlimportscanner");
+    if (path.empty())
+        path = which("qmlimportscanner");
+
+    return path;
+}
+
 bool pathContainsFile(std::filesystem::path dir, std::filesystem::path file) {
     // If dir ends with "/" and isn't the root directory, then the final
     // component returned by iterators will include "." and will interfere

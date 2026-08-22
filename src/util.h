@@ -39,6 +39,8 @@ std::map<std::string, std::string> queryQmake(const std::filesystem::path& qmake
 
 std::filesystem::path findQmake();
 
+std::filesystem::path findQmlImportScanner();
+
 bool pathContainsFile(std::filesystem::path dir, std::filesystem::path file);
 
 std::string join(const std::vector<std::string> &list);

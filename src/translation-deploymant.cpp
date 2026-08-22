@@ -20,6 +20,8 @@ struct TranslationInfo {
     TranslationDeploymentType deploymentType;
     // Something like qtbase, qtmultimedia, ...
     std::vector<std::string> knownQmPrefixes;
+    // Qt languages to install; install everything if empty
+    std::unordered_set<std::string> languages;
     TempDir * tempDir;
 
     static std::vector<std::string>
@@ -125,6 +127,9 @@ deployTranslationsQtWalkTrDir(const TranslationInfo &ti, TranslationData &transl
             getModuleTranslation(fileName, ti.knownQmPrefixes);
 
         if (moduleTranslation.isValid()) {
+            if (!ti.languages.empty() && ti.languages.count(moduleTranslation.language))
+                continue;
+
             translationData.usedTranslatedLibs.insert(moduleTranslation.libName);
 
             auto & lang2TranslationMapping = translationData.lang2TranslationMapping;
@@ -269,7 +274,8 @@ deployTranslationsApp(const TranslationInfo &ti) {
 
 bool
 deployTranslations(linuxdeploy::core::appdir::AppDir &appDir, const std::filesystem::path &qtTranslationsPath,
-  const std::vector<QtModule> &modules, TranslationDeploymentType deploymentType, TempDir & tmpDir)
+  const std::vector<QtModule> &modules, TranslationDeploymentType deploymentType,
+  const std::vector<std::string> &languages, TempDir & tmpDir)
 {
     using namespace linuxdeploy::log;
     using namespace linuxdeploy::util::misc;
@@ -290,6 +296,7 @@ deployTranslations(linuxdeploy::core::appdir::AppDir &appDir, const std::filesys
     translationInfo.qtTranslationsPath = qtTranslationsPath;
     translationInfo.deploymentType = deploymentType;
     translationInfo.knownQmPrefixes = TranslationInfo::getKnownQmPrefixes(modules);
+    translationInfo.languages.insert(languages.begin(), languages.end());
     translationInfo.tempDir = &tmpDir;
 
     if (deploymentType & (TranslationDeployment::individual | TranslationDeployment::merged)) {

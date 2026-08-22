@@ -106,6 +106,9 @@ int main(const int argc, const char *const *const argv) {
                                                   "Extra Qt module to deploy (specified by name, filename or path)",
                                                   {'m', "extra-module"});
 
+    args::ValueFlag<std::string> qtLanguages(parser, "language list",
+                                             "Comma separated list of Qt languages to install (does not apply to "
+                                             ".qm files provided by program)", {"qt-languages"});
     bool individualTranslations = true;
     bool appTranslations = true;
     bool mergedTranslations = false;
@@ -405,6 +408,17 @@ int main(const int argc, const char *const *const argv) {
         translationDeploymentType |= TranslationDeployment::user_symlink;
     if (mergedTranslations)
         translationDeploymentType |= TranslationDeployment::merged;
+
+    std::vector<std::string> languages = split(qtLanguages.Get(), ',');
+
+    if (qtLanguages) {
+        languages = split(qtLanguages.Get(), ',');
+    } else {
+        const char *languagesEnv = getenv("TRANSLATION_LANGUAGES");
+        if (languagesEnv != nullptr) {
+            languages = split(languagesEnv, ',');
+        }
+    }
 
     if (translationDeploymentType == 0) {
         ldLog() << std::endl << "-- Skipping translation deployment on user request --" << std::endl;

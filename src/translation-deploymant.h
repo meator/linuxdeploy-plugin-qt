@@ -23,5 +23,6 @@ using TranslationDeploymentType = std::underlying_type_t<TranslationDeployment::
 
 bool
 deployTranslations(linuxdeploy::core::appdir::AppDir &appDir, const std::filesystem::path &qtTranslationsPath,
-  const std::vector<QtModule> &modules, TranslationDeploymentType deploymentType, TempDir & tmpDir
+  const std::vector<QtModule> &modules, TranslationDeploymentType deploymentType,
+  const std::vector<std::string> &languages, TempDir & tmpDir
 );
